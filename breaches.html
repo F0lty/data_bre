@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <script src="https://d3js.org/d3.v5.js"></script>
+    <title></title>
+  </head>
+  <body>
+    <style>
+      .body{
+        background-color:rgb(128, 58, 63);
+        height:100%;
+        width:100%;
+        margin: 0px;
+        padding: 0px;
+      }
+      html, body {
+    margin: 0;
+    height: 100%;
+    width:100%;
+}
+    #par{
+      border: solid;
+      border-width: thin;
+      background-color:rgb(128, 58, 63);
+      float:right;
+      text-align: left;
+      height: 80%;
+      width:47%;
+      padding-left: 2%;
+      padding-right: 2%;
+      margin: none;
+    }
+    .bar-chart{
+      float:left;
+      width: 50%;
+      height: 80%;
+      margin: 0;
+      padding: none;
+    }
+    </style>
+    <div class="body" style="margin:none">
+      <svg class="bar-chart">
+      </svg>
+      <div id="par">
+        <p ></p>
+      </div>
+
+    </div>
+
+    </body>
+
+
+
+
+
+
+<script>
+
+
+/*
+Goverment -> Goverment
+            -> Military
+            -> Health
+            -> Financial
+            -> Academia
+            -> Legal
+Private -> Services ->Retail
+                    ->Web
+                    ->Telecom
+                    ->app
+                    ->Transport
+                    -> Gaming
+                    -> Tech
+                    -> Energy
+        -> Media
+
+
+
+*/
+var bruhh = {
+  children:[{
+    children:[{children:[{children:[],name:"Government"},{children:[],name:"Healthcare"},{children:[],name:"Financial"},{children:[],name:"Academia"}],
+              name:"Government"},
+              {children:[{children:[],name:"Retail"},{children:[],name:"Web"},{children:[],name:"Telecoms"},{children:[],name:"App"},{children:[],name:"Transport"},{children:[],name:"Gaming"},{children:[],name:"Tech"},{children:[],name:"Energy"}],
+              name:"Services"},
+              {children:[],name:"Media"}]}]}
+console.log(document.getElementsByClassName('bar'));
+var wHeight = document.documentElement.clientHeight;
+var wWidth = document.documentElement.clientWidth;
+var sectors = ["Government","Healthcare","Financial","Academia","Retail","Web","Telecoms","App","Transport","Gaming","Tech","Energy","Media"]
+var cData = [],
+   cEntity = [],
+   cStory = [],
+   cYear = [],
+   cValue = [],
+   cSector = [],
+   cHow = [],
+   cSource = [],
+   cSName = [];
+   datapoints = [];
+   types = [];
+
+
+   blabla();
+    async function blabla(){
+      const respons = await fetch('/app');
+      const db = await respons.json();
+      if (typeof db === 'object') {
+        db.sort(compareValues('Records Lost'));
+        var a = 0;
+        for (var a = 0; a < 270; a++) {
+
+          cEntity[a] = db[a].Entity;
+          cValue[a] = db[a]["Records Lost"];
+          cStory[a] = db[a].Story;
+          cYear[a] = db[a].Year;
+          cSector[a] = db[a].Sector;
+          cHow[a] = db[a]["Method of Leak"];
+          cSource[a] = db[a]["1st source"];
+          cSName[a] = db[a]["Source Name"];
+
+          var ind = sectors.indexOf(cSector[a]);
+
+          if(ind<4  && ind >= 0){
+            bruhh.children[0].children[0].children[ind].children.push({name:cEntity[a],value:cValue[a],story:cStory[a],year:cYear[a],sector:cSector[a]});
+          }else if (ind>=4 && ind<12) {
+            bruhh.children[0].children[1].children[ind-4].children.push({name:cEntity[a],value:cValue[a],story:cStory[a],year:cYear[a],sector:cSector[a]});
+          }else{
+            bruhh.children[0].children[2].children.push({name:cEntity[a],value:cValue[a],story:cStory[a],year:cYear[a],sector:cSector[a]});
+          }
+
+
+        }
+        circles();
+
+      }
+    }
+
+function circles(){
+  var width = window.innerWidth/2;
+  var height = window.innerHeight*0.8;
+        var pack = bruhh => d3.pack()
+          .size([width, height])
+          .padding(5)
+      (d3.hierarchy(bruhh)
+          .sum(d => d.value)
+          .sort((a, b) => b.value - a.value));
+
+        var format = d3.format(",d")
+        var color = d3.scaleLinear()
+            .domain([1, 7])
+            .range(["#73202F","#BFADA8","#A60808"])
+            .interpolate(d3.interpolateHcl);
+      const root = pack(bruhh);
+      let focus = root;
+      let view;
+
+      const svg = d3.select("svg")
+          .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
+          .attr('width', width).attr('height', height)
+          .style("display", "block")
+          .style("margin", "0 -14px")
+          .style("background", color(0))
+          .style("cursor", "pointer")
+          .on("click", () => zoom(root.children[0]));
+
+  const node = svg.append("g")
+    .selectAll("circle")
+    .data(root.descendants().slice(1))
+    .join("circle")
+      .attr("fill", d => d.children ? color(d.depth) : "white")
+      //.attr("pointer-events", d => !d.children ? "none" : null)
+      .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
+      .on("mouseout", function() { d3.select(this).attr("stroke", null); })
+      .on("click", function(d){
+            focus !== d && (zoom(d), d3.event.stopPropagation());
+            let t = document.getElementById("par");
+            if(d.data.story){
+              t.innerHTML="<h1>"+d.data.name+"</h1><h3>"+d.data.year+"</h3><h3>Stolen Data: "+d.data.value+"</h3></br>"+d.data.story+"</br>";
+              zoom(root.children[0]);
+          };
+        });
+      console.log(root);
+
+  var textScale = d3.scaleLinear()
+      .domain([0,d3.max(cValue)])
+      .range([10,20]);
+
+      //d3.select(this)._groups[0][0].r.animVal.value
+  const label = svg.append("g")
+      .style("font-family", "Verdana, Geneva, sans-serif")
+      .attr("pointer-events", "none")
+      .attr("text-anchor", "middle")
+    .selectAll("text")
+    .data(root.descendants())
+    .join("text")
+      .style("fill-opacity", d => d.parent === root ? 0.5 : 0)
+      .style("display", d => d.parent === root ? "inline" : "none")
+      .text(d => d.data.name)
+      // .style("font-size", function(d){return textScale(d.value)});
+
+  zoomTo([root.x, root.y, root.r * 2]);
+
+  function zoomTo(v) {
+    const k = width / v[2];
+
+    view = v;
+
+    label.attr("transform", d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
+    node.attr("transform", d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
+    node.attr("r", d => d.r * k);
+  }
+
+  function zoom(d) {
+    const focus0 = focus;
+    focus = d;
+
+    if(!d.children){
+      const transition = svg.transition()
+          .duration(d3.event.altKey ? 7500 : 750)
+          .tween("zoom", d => {
+            const i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r]);
+            return t => zoomTo(i(t));
+          });
+
+
+      label
+        .filter(function(d) { return d.parent === focus || this.style.display === "inline"; })
+        .transition(transition)
+          .style("fill-opacity", d => d.parent === focus ? 0.8 : 0)
+          .style("font-size", function(d){return focus.r})
+          .on("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
+          .on("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
+    }else{
+
+    const transition = svg.transition()
+        .duration(d3.event.altKey ? 7500 : 750)
+        .tween("zoom", d => {
+          const i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2]);
+          return t => zoomTo(i(t));
+        });
+    label
+    .style("font-size", function(d){return textScale(d.value)})
+      .filter(function(d) { return d.parent === focus || this.style.display === "inline"; })
+      .transition(transition)
+        .style("fill-opacity", d => d.parent === focus ? 0.8 : 0)
+        .on("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
+        //.on("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
+  }
+  }
+  return svg.node();
+
+
+
+    }
+
+
+
+
+
+    function compareValues(key, order = 'asc') {
+      return function innerSort(a, b) {
+        if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+          // property doesn't exist on either object
+          return 0;
+        }
+    const varA = (typeof a[key] === 'string')
+      ? a[key].toUpperCase() : a[key];
+    const varB = (typeof b[key] === 'string')
+      ? b[key].toUpperCase() : b[key];
+
+    let comparison = 0;
+    if (varA > varB) {
+      comparison = 1;
+    } else if (varA < varB) {
+      comparison = -1;
+    }
+    return (
+      (order === 'desc') ? (comparison * -1) : comparison
+    );
+  };
+}
+//charts();
+function charts(){
+  var vWidth = 300;
+    var vHeight = 200;
+
+    // Prepare our physical space
+    var g = d3.select('svg').attr('width', vWidth).attr('height', vHeight).select('g');
+
+    // Get the data from our CSV file
+    d3.csv('convertcsv.csv', function(error, vCsvData) {
+        if (error) throw error;
+
+        vData = d3.stratify()(vCsvData);
+        drawViz(vData);
+    });
+
+    function drawViz(vData) {
+        // Declare d3 layout
+        var vLayout = d3.pack().size([vWidth, vHeight]);
+
+        // Layout + Data
+        var vRoot = d3.hierarchy(vData).sum(function (d) { return d.data.size; });
+        var vNodes = vRoot.descendants();
+        vLayout(vRoot);
+        var vSlices = g.selectAll('circle').data(vNodes).enter().append('circle');
+
+        // Draw on screen
+        vSlices.attr('cx', function (d) { return d.x; })
+            .attr('cy', function (d) { return d.y; })
+            .attr('r', function (d) { return d.r; });
+    }
+
+}
+function chartss(){
+  var datos = [150,100,200,20,40];
+  var svgWidth = 700, svgHeight = 500, barPadding = 1;
+  var barWidth = (svgWidth/cValue.length)
+
+  var svg = d3.select('svg')
+        .attr("width", svgWidth)
+        .attr("height", svgHeight);
+  var yScale = d3.scaleLinear()
+        .domain([0,d3.max(cValue)])
+        .range([0,svgHeight]);
+  var barChart = svg.selectAll("rect")
+        .data(cValue)
+        .enter()
+        .append("rect")
+        .attr("y",function(d){
+            return svgHeight - yScale(d)
+        })
+        .attr("height", function(d){
+            return d
+        })
+        .attr("width", barWidth - barPadding)
+        .attr("transform",function(d,i){
+          var translate = [barWidth * i, 0];
+          return "translate("+ translate+")";
+
+        });
+/*var text = svg.selectAll('text')
+        .data(cEntity)
+        .enter()
+        .append("text")
+        .text(function(d){return d;})
+        .attr("y", function(d,i){return svgHeight-barChart})
+        .attr("x", function(d,i){return barWidth * i});*/
+}
+
+  </script>
+</html>
