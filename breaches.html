@@ -10,77 +10,61 @@
   </head>
   <body>
     <style>
-      .body{
-        background-color:rgb(128, 58, 63);
-        height:100%;
-        width:100%;
-        margin: 0px;
-        padding: 0px;
-      }
-      html, body {
-    margin: 0;
-    height: 100%;
+            html, body {
+    margin: none;
+    height: 150%;
     width:100%;
+    background-color:#263fe3;
 }
+      .main{
+        background-color:rgb(128, 58, 63);
+        height:66%;
+        width:100%;
+        margin: none;
+        padding: none;
+        background-color:#263fe3;
+      }
+
     #par{
-      border: solid;
+      color:white;
+      border-color:black !important;
+      border-right: solid;
       border-width: thin;
       background-color:rgb(128, 58, 63);
-      float:right;
+      float:left;
       text-align: left;
-      height: 80%;
-      width:47%;
+      height: 33%;
+      width:50%;
       padding-left: 2%;
       padding-right: 2%;
       margin: none;
+      background-color:#263fe3;
     }
-    .bar-chart{
+      #my_dataviz{
+      color:white;
       float:left;
-      width: 50%;
-      height: 80%;
-      margin: 0;
+      width:45%;
+      background-color:#263fe3;  
+      }
+    .bar-chart{
+      background-color:#263fe3;
+      float:right;
+      width: 100%;
+      height: 33%;
+      margin-left: 0px;
       padding: none;
     }
     </style>
-    <div class="body" style="margin:none">
-      <svg class="bar-chart">
-      </svg>
+    <div class="main">
+      <svg class="bar-chart"></svg>
       <div id="par">
-        <p ></p>
+        <p></p>
       </div>
-
+    <div id="my_dataviz"></div>
     </div>
 
     </body>
-
-
-
-
-
-
 <script>
-
-
-/*
-Goverment -> Goverment
-            -> Military
-            -> Health
-            -> Financial
-            -> Academia
-            -> Legal
-Private -> Services ->Retail
-                    ->Web
-                    ->Telecom
-                    ->app
-                    ->Transport
-                    -> Gaming
-                    -> Tech
-                    -> Energy
-        -> Media
-
-
-
-*/
 var bruhh = {
   children:[{
     children:[{children:[{children:[],name:"Government"},{children:[],name:"Healthcare"},{children:[],name:"Financial"},{children:[],name:"Academia"}],
@@ -88,7 +72,6 @@ var bruhh = {
               {children:[{children:[],name:"Retail"},{children:[],name:"Web"},{children:[],name:"Telecoms"},{children:[],name:"App"},{children:[],name:"Transport"},{children:[],name:"Gaming"},{children:[],name:"Tech"},{children:[],name:"Energy"}],
               name:"Services"},
               {children:[],name:"Media"}]}]}
-console.log(document.getElementsByClassName('bar'));
 var wHeight = document.documentElement.clientHeight;
 var wWidth = document.documentElement.clientWidth;
 var sectors = ["Government","Healthcare","Financial","Academia","Retail","Web","Telecoms","App","Transport","Gaming","Tech","Energy","Media"]
@@ -103,6 +86,9 @@ var cData = [],
    cSName = [];
    datapoints = [];
    types = [];
+   var data1 = new Array(14).fill(0);
+   var data2 = new Array(14).fill(0);
+   var data = [];
 
 
    blabla();
@@ -113,7 +99,8 @@ var cData = [],
         db.sort(compareValues('Records Lost'));
         var a = 0;
         for (var a = 0; a < 270; a++) {
-
+          data1[2017-db[a].Year] += db[a]["Records Lost"];
+          data2[2017-db[a].Year] = new Date(parseInt(db[a].Year),0);
           cEntity[a] = db[a].Entity;
           cValue[a] = db[a]["Records Lost"];
           cStory[a] = db[a].Story;
@@ -135,13 +122,71 @@ var cData = [],
 
 
         }
+        for (var i = 0; i < data1.length; i++) {
+          data[i] = {year: data2[i],value: data1[i]}
+        }
+
         circles();
+        barCh();
 
       }
     }
+    //-------------------------Line CHART------------------------
+    function barCh(){
+    // set the dimensions and margins of the graph
+    var margin = {top: 10, right: 30, bottom: 30, left: 60},
+          width = window.innerWidth/3- margin.left - margin.right,
+          height = window.innerHeight*0.5 - margin.top - margin.bottom;
+          //width = 460 - margin.left - margin.right,
+          //height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3.select("#my_dataviz")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+        var x = d3.scaleTime()
+          .domain(d3.extent(data, function (d) { return d.year; }))
+          .range([ 0, width ]);
+        svg.append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x));
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+          .domain([0, d3.max(data, function(d) { return d.value/10000000+100})])
+          .range([ height, 0 ]);
+        svg.append("g")
+          .call(d3.axisLeft(y));
+
+        // Add the line
+        svg.append("path")
+          .datum(data)
+          .attr("fill", "none")
+          .attr("stroke", "black")
+          .attr("stroke-width", 1.5)
+          .attr("d", d3.line()
+            .x(function (d) { return x(d.year)})
+            .y(function(d) { return y(d.value/10000000) })
+            )
+      svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 +margin.top)
+        .attr("text-anchor", "middle")
+        .attr("fill", "white")
+        .style("font-size", "20px")  
+        .text("Lost Records in 10 000 000");
+
+console.log(data);
+    }
+
+    //-------------------------CIRCLE PACKING------------------------
 
 function circles(){
-  var width = window.innerWidth/2;
+  var width = window.innerWidth/2.4;
   var height = window.innerHeight*0.8;
         var pack = bruhh => d3.pack()
           .size([width, height])
@@ -153,7 +198,7 @@ function circles(){
         var format = d3.format(",d")
         var color = d3.scaleLinear()
             .domain([1, 7])
-            .range(["#73202F","#BFADA8","#A60808"])
+            .range(["#2039CC","#0C154A","#080E33"])
             .interpolate(d3.interpolateHcl);
       const root = pack(bruhh);
       let focus = root;
@@ -166,22 +211,23 @@ function circles(){
           .style("margin", "0 -14px")
           .style("background", color(0))
           .style("cursor", "pointer")
-          .on("click", () => zoom(root.children[0]));
+          //.on("click", () => zoom(root.children[0]));
 
   const node = svg.append("g")
     .selectAll("circle")
     .data(root.descendants().slice(1))
     .join("circle")
-      .attr("fill", d => d.children ? color(d.depth) : "white")
+      .attr("fill", d => d.children ? color(d.depth) : "black")
       //.attr("pointer-events", d => !d.children ? "none" : null)
       .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
       .on("mouseout", function() { d3.select(this).attr("stroke", null); })
       .on("click", function(d){
             focus !== d && (zoom(d), d3.event.stopPropagation());
             let t = document.getElementById("par");
-            if(d.data.story){
+            if(d.data.story || d.data.story == ""){
               t.innerHTML="<h1>"+d.data.name+"</h1><h3>"+d.data.year+"</h3><h3>Stolen Data: "+d.data.value+"</h3></br>"+d.data.story+"</br>";
-              zoom(root.children[0]);
+              zoom(d.parent);
+              console.log(d.data.story)
           };
         });
       console.log(root);
@@ -193,6 +239,7 @@ function circles(){
       //d3.select(this)._groups[0][0].r.animVal.value
   const label = svg.append("g")
       .style("font-family", "Verdana, Geneva, sans-serif")
+      .style("fill","white")
       .attr("pointer-events", "none")
       .attr("text-anchor", "middle")
     .selectAll("text")
