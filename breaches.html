@@ -10,23 +10,26 @@
   </head>
   <body>
     <style>
-            html, body {
-    margin: none;
-    height: 150%;
-    width:100%;
-    background-color:#263fe3;
+      @font-face {
+    font-family: 'manropeextralight';
+    src: url('https://cdn.glitch.com/f8dc3699-8d92-43a6-a7dc-47539821c2c8%2Fmanrope-variablefont_wght-webfont.woff2?v=1587408238550') format('woff2'),
+         url('https://cdn.glitch.com/f8dc3699-8d92-43a6-a7dc-47539821c2c8%2Fmanrope-variablefont_wght-webfont.woff?v=1587408231459') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
 }
-      .main{
-        background-color:rgb(128, 58, 63);
-        height:66%;
-        width:100%;
-        margin: none;
-        padding: none;
-        background-color:#263fe3;
-      }
+            html, body {
+    font-family: "manropeextralight" !important;
+    margin: none;
+    height: 100%;
+    width:100%;
+    background-color:#2B547E;
+}
 
     #par{
       color:white;
+      
+      font-style:bold;
       border-color:black !important;
       border-right: solid;
       border-width: thin;
@@ -38,40 +41,42 @@
       padding-left: 2%;
       padding-right: 2%;
       margin: none;
-      background-color:#263fe3;
+      background-color:#2B547E;
     }
       #my_dataviz{
       color:white;
       float:left;
       width:45%;
-      background-color:#263fe3;  
+      background-color:#2B547E;  
       }
     .bar-chart{
-      background-color:#263fe3;
+      background-color:#2B547E;
       float:right;
       width: 100%;
-      height: 33%;
+      height: 66%;
       margin-left: 0px;
       padding: none;
     }
     </style>
-    <div class="main">
       <svg class="bar-chart"></svg>
       <div id="par">
-        <p></p>
+        <p><h1>Data Breaches between 2004 - 2017</h1></p>
       </div>
     <div id="my_dataviz"></div>
-    </div>
+
 
     </body>
 <script>
+  //setting up some space for variables. D3 accepts specific type of object, where each object has children and name...last ones has also values and each object is one cricle
 var bruhh = {
   children:[{
     children:[{children:[{children:[],name:"Government"},{children:[],name:"Healthcare"},{children:[],name:"Financial"},{children:[],name:"Academia"}],
               name:"Government"},
               {children:[{children:[],name:"Retail"},{children:[],name:"Web"},{children:[],name:"Telecoms"},{children:[],name:"App"},{children:[],name:"Transport"},{children:[],name:"Gaming"},{children:[],name:"Tech"},{children:[],name:"Energy"}],
               name:"Services"},
-              {children:[],name:"Media"}]}]}
+              {children:[],name:"Media"}],name: "DATA BREACHES"}]}
+
+//declaring other variables
 var wHeight = document.documentElement.clientHeight;
 var wWidth = document.documentElement.clientWidth;
 var sectors = ["Government","Healthcare","Financial","Academia","Retail","Web","Telecoms","App","Transport","Gaming","Tech","Energy","Media"]
@@ -86,19 +91,21 @@ var cData = [],
    cSName = [];
    datapoints = [];
    types = [];
+  //these are used later on for line chart (Line chart also needs specific type of object)
    var data1 = new Array(14).fill(0);
    var data2 = new Array(14).fill(0);
    var data = [];
 
 
-   blabla();
-    async function blabla(){
+   main();
+  //this function gets data from node server and make them ready for chart functions
+    async function main(){
       const respons = await fetch('/app');
       const db = await respons.json();
       if (typeof db === 'object') {
         db.sort(compareValues('Records Lost'));
         var a = 0;
-        for (var a = 0; a < 270; a++) {
+        for (var a = 0; a < 270; a++) { //for each piece of data we do following:
           data1[2017-db[a].Year] += db[a]["Records Lost"];
           data2[2017-db[a].Year] = new Date(parseInt(db[a].Year),0);
           cEntity[a] = db[a].Entity;
@@ -125,7 +132,7 @@ var cData = [],
         for (var i = 0; i < data1.length; i++) {
           data[i] = {year: data2[i],value: data1[i]}
         }
-
+      //when the data are ready, we can display them
         circles();
         barCh();
 
@@ -136,7 +143,7 @@ var cData = [],
     // set the dimensions and margins of the graph
     var margin = {top: 10, right: 30, bottom: 30, left: 60},
           width = window.innerWidth/3- margin.left - margin.right,
-          height = window.innerHeight*0.5 - margin.top - margin.bottom;
+          height = window.innerHeight*0.3 - margin.top - margin.bottom;
           //width = 460 - margin.left - margin.right,
           //height = 400 - margin.top - margin.bottom;
 
@@ -174,7 +181,7 @@ var cData = [],
             )
       svg.append("text")
         .attr("x", (width / 2))             
-        .attr("y", 0 +margin.top)
+        .attr("y", 5+margin.top)
         .attr("text-anchor", "middle")
         .attr("fill", "white")
         .style("font-size", "20px")  
@@ -186,33 +193,35 @@ console.log(data);
     //-------------------------CIRCLE PACKING------------------------
 
 function circles(){
-  var width = window.innerWidth/2.4;
+  var width = window.innerWidth/2.8;
   var height = window.innerHeight*0.8;
-        var pack = bruhh => d3.pack()
+        //formating data little bit for circle packing
+      var pack = bruhh => d3.pack()
           .size([width, height])
           .padding(5)
       (d3.hierarchy(bruhh)
           .sum(d => d.value)
           .sort((a, b) => b.value - a.value));
-
+      //Look of the circles
         var format = d3.format(",d")
         var color = d3.scaleLinear()
             .domain([1, 7])
-            .range(["#2039CC","#0C154A","#080E33"])
+            .range(["#2B547E","#0C154A","#080E33"])
             .interpolate(d3.interpolateHcl);
       const root = pack(bruhh);
       let focus = root;
       let view;
 
+  //selecting SVG and giving it some parameters so we can work with it later
       const svg = d3.select("svg")
           .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
           .attr('width', width).attr('height', height)
           .style("display", "block")
           .style("margin", "0 -14px")
-          .style("background", color(0))
+          .style("background", "#2B547E")
           .style("cursor", "pointer")
-          //.on("click", () => zoom(root.children[0]));
-
+         
+//This bit is about each circle, their values, attributes and looks
   const node = svg.append("g")
     .selectAll("circle")
     .data(root.descendants().slice(1))
@@ -221,13 +230,14 @@ function circles(){
       //.attr("pointer-events", d => !d.children ? "none" : null)
       .on("mouseover", function() { d3.select(this).attr("stroke", "#000"); })
       .on("mouseout", function() { d3.select(this).attr("stroke", null); })
-      .on("click", function(d){
+      .on("click", function(d){ //on click call zooming function
             focus !== d && (zoom(d), d3.event.stopPropagation());
             let t = document.getElementById("par");
-            if(d.data.story || d.data.story == ""){
+
+            if(d.data.story || d.data.story == ""){//if user clicks on the last bubble, show information about it below in <p>
               t.innerHTML="<h1>"+d.data.name+"</h1><h3>"+d.data.year+"</h3><h3>Stolen Data: "+d.data.value+"</h3></br>"+d.data.story+"</br>";
+
               zoom(d.parent);
-              console.log(d.data.story)
           };
         });
       console.log(root);
@@ -236,23 +246,22 @@ function circles(){
       .domain([0,d3.max(cValue)])
       .range([10,20]);
 
-      //d3.select(this)._groups[0][0].r.animVal.value
-  const label = svg.append("g")
-      .style("font-family", "Verdana, Geneva, sans-serif")
+  const label = svg.append("g") //attributes and styles of each label
+      .style("font-family", "manropeextralight")
       .style("fill","white")
       .attr("pointer-events", "none")
       .attr("text-anchor", "middle")
     .selectAll("text")
     .data(root.descendants())
     .join("text")
+      .style("font-size", function(d){return textScale(d.value)})
       .style("fill-opacity", d => d.parent === root ? 0.5 : 0)
       .style("display", d => d.parent === root ? "inline" : "none")
       .text(d => d.data.name)
-      // .style("font-size", function(d){return textScale(d.value)});
-
+      
   zoomTo([root.x, root.y, root.r * 2]);
 
-  function zoomTo(v) {
+  function zoomTo(v) {//This function does the smooth transition zooming from one bubble to another
     const k = width / v[2];
 
     view = v;
@@ -262,32 +271,16 @@ function circles(){
     node.attr("r", d => d.r * k);
   }
 
-  function zoom(d) {
+  function zoom(d) {//this function calls zoomTo to do the zooming itself, but it also does smooth showing and disappearing of the text
     const focus0 = focus;
     focus = d;
 
-    if(!d.children){
-      const transition = svg.transition()
-          .duration(d3.event.altKey ? 7500 : 750)
-          .tween("zoom", d => {
-            const i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r]);
-            return t => zoomTo(i(t));
-          });
-
-
-      label
-        .filter(function(d) { return d.parent === focus || this.style.display === "inline"; })
-        .transition(transition)
-          .style("fill-opacity", d => d.parent === focus ? 0.8 : 0)
-          .style("font-size", function(d){return focus.r})
-          .on("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
-          .on("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
-    }else{
+ 
 
     const transition = svg.transition()
         .duration(d3.event.altKey ? 7500 : 750)
         .tween("zoom", d => {
-          const i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2]);
+          const i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r *1.5]);
           return t => zoomTo(i(t));
         });
     label
@@ -296,19 +289,14 @@ function circles(){
       .transition(transition)
         .style("fill-opacity", d => d.parent === focus ? 0.8 : 0)
         .on("start", function(d) { if (d.parent === focus) this.style.display = "inline"; })
-        //.on("end", function(d) { if (d.parent !== focus) this.style.display = "none"; });
   }
-  }
+  
   return svg.node();
 
 
 
     }
-
-
-
-
-
+    //This function sorts the values which came from the database
     function compareValues(key, order = 'asc') {
       return function innerSort(a, b) {
         if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
@@ -330,74 +318,6 @@ function circles(){
       (order === 'desc') ? (comparison * -1) : comparison
     );
   };
-}
-//charts();
-function charts(){
-  var vWidth = 300;
-    var vHeight = 200;
-
-    // Prepare our physical space
-    var g = d3.select('svg').attr('width', vWidth).attr('height', vHeight).select('g');
-
-    // Get the data from our CSV file
-    d3.csv('convertcsv.csv', function(error, vCsvData) {
-        if (error) throw error;
-
-        vData = d3.stratify()(vCsvData);
-        drawViz(vData);
-    });
-
-    function drawViz(vData) {
-        // Declare d3 layout
-        var vLayout = d3.pack().size([vWidth, vHeight]);
-
-        // Layout + Data
-        var vRoot = d3.hierarchy(vData).sum(function (d) { return d.data.size; });
-        var vNodes = vRoot.descendants();
-        vLayout(vRoot);
-        var vSlices = g.selectAll('circle').data(vNodes).enter().append('circle');
-
-        // Draw on screen
-        vSlices.attr('cx', function (d) { return d.x; })
-            .attr('cy', function (d) { return d.y; })
-            .attr('r', function (d) { return d.r; });
-    }
-
-}
-function chartss(){
-  var datos = [150,100,200,20,40];
-  var svgWidth = 700, svgHeight = 500, barPadding = 1;
-  var barWidth = (svgWidth/cValue.length)
-
-  var svg = d3.select('svg')
-        .attr("width", svgWidth)
-        .attr("height", svgHeight);
-  var yScale = d3.scaleLinear()
-        .domain([0,d3.max(cValue)])
-        .range([0,svgHeight]);
-  var barChart = svg.selectAll("rect")
-        .data(cValue)
-        .enter()
-        .append("rect")
-        .attr("y",function(d){
-            return svgHeight - yScale(d)
-        })
-        .attr("height", function(d){
-            return d
-        })
-        .attr("width", barWidth - barPadding)
-        .attr("transform",function(d,i){
-          var translate = [barWidth * i, 0];
-          return "translate("+ translate+")";
-
-        });
-/*var text = svg.selectAll('text')
-        .data(cEntity)
-        .enter()
-        .append("text")
-        .text(function(d){return d;})
-        .attr("y", function(d,i){return svgHeight-barChart})
-        .attr("x", function(d,i){return barWidth * i});*/
 }
 
   </script>
