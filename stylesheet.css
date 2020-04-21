@@ -4,8 +4,8 @@
 
 @font-face {
     font-family: 'manropeextralight';
-    src: url('manrope-variablefont_wght-webfont.woff2') format('woff2'),
-         url('manrope-variablefont_wght-webfont.woff') format('woff');
+    src: url('https://cdn.glitch.com/f8dc3699-8d92-43a6-a7dc-47539821c2c8%2Fmanrope-variablefont_wght-webfont.woff2?v=1587408238550') format('woff2'),
+         url('https://cdn.glitch.com/f8dc3699-8d92-43a6-a7dc-47539821c2c8%2Fmanrope-variablefont_wght-webfont.woff?v=1587408231459') format('woff');
     font-weight: normal;
     font-style: normal;
 
